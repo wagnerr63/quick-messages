@@ -22,6 +22,7 @@ func handleRequests() {
 	routes.HandleFunc("/", homePage)
 	routes.HandleFunc("/users", controllers.UsersIndex).Methods("GET")
 	routes.HandleFunc("/users", controllers.UsersStore).Methods("POST")
+	// routes.HandleFunc("/users", controllers.UsersUpdate).Methods("PUT")
 
 	log.Fatal(http.ListenAndServe(":10000", routes))
 }

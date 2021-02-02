@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"../models"
 )
@@ -11,6 +15,7 @@ import (
 // UsersIndex list all users
 func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: /users")
+
 	json.NewEncoder(w).Encode(models.AllUsers)
 }
 
@@ -41,6 +46,14 @@ func UsersStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	models.AllUsers = append(models.AllUsers, user)
+	user.Password = GetMD5Hash(user.Password)
+
+	models.Create(user)
 	json.NewEncoder(w).Encode(user)
+}
+
+// GetMD5Hash cripto
+func GetMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }
