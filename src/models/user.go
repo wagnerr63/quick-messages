@@ -1,10 +1,10 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
-	"math/rand"
 	"time"
+
+	"../db"
 )
 
 // User struct
@@ -15,25 +15,55 @@ type User struct {
 	Password  string     `json:"password"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
+	Status    int        `json:"status"`
 }
 
-// AllUsers mock
-var AllUsers = []User{
-	User{ID: rand.Intn(100), Name: "Wagner", Email: "wagner@mail.com", Password: "teste123"},
+// FindAll returns all users
+func FindAll() []User {
+	db := db.ConnectDatabase()
+
+	selectAllProducts, err := db.Query("SELECT * FROM users ORDER BY id ASC;")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	u := User{}
+	users := []User{}
+
+	for selectAllProducts.Next() {
+		var id, status int
+		var name, email, password string
+		var createdAt, updatedAt *time.Time
+
+		err = selectAllProducts.Scan(&id, &name, &email, &password, &createdAt, &updatedAt, &status)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		u.ID = id
+		u.Name = name
+		u.Email = email
+		u.CreatedAt = createdAt
+		u.UpdatedAt = updatedAt
+		u.Status = status
+
+		users = append(users, u)
+	}
+
+	defer db.Close()
+	return users
 }
 
 // Create add a new User
 func Create(user User) {
-	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/quick_messages")
-	if err != nil {
-		panic(err.Error())
-	}
-	newUser, err := db.Prepare("INSERT INTO users(name, email, password) VALUES (?,?,?);")
+	db := db.ConnectDatabase()
+
+	insertUser, err := db.Prepare("INSERT INTO users(name, email, password) VALUES (?,?,?);")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	userID, err := newUser.Exec(user.Name, user.Email, user.Password)
+	userID, err := insertUser.Exec(user.Name, user.Email, user.Password)
 	if err != nil {
 		panic(err.Error())
 	}

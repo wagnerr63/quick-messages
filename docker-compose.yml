@@ -17,7 +17,7 @@ services:
       - db_network
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: golang_mysql
+      MYSQL_DATABASE: quick_messages
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     links:

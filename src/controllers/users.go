@@ -15,8 +15,9 @@ import (
 // UsersIndex list all users
 func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: /users")
+	users := models.FindAll()
 
-	json.NewEncoder(w).Encode(models.AllUsers)
+	json.NewEncoder(w).Encode(users)
 }
 
 // UsersStore list all users
