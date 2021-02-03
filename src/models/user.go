@@ -13,16 +13,18 @@ type User struct {
 	Name      string     `json:"name"`
 	Email     string     `json:"email"`
 	Password  string     `json:"password"`
+	Image     string     `json:"image"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
-	Status    int        `json:"status"`
+	Level     int        `json:"level"`  // 0 - Normal | 1 - MASTER
+	Status    int        `json:"status"` // 0 - Inative | 1 - Ative
 }
 
 // FindAll returns all users
 func FindAll() []User {
 	db := db.ConnectDatabase()
 
-	selectAllProducts, err := db.Query("SELECT * FROM users ORDER BY id ASC;")
+	selectAllProducts, err := db.Query("SELECT * FROM users ORDER BY created_at ASC;")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -31,11 +33,11 @@ func FindAll() []User {
 	users := []User{}
 
 	for selectAllProducts.Next() {
-		var id, status int
-		var name, email, password string
+		var id, status, level int
+		var name, email, password, image string
 		var createdAt, updatedAt *time.Time
 
-		err = selectAllProducts.Scan(&id, &name, &email, &password, &createdAt, &updatedAt, &status)
+		err = selectAllProducts.Scan(&id, &name, &email, &password, &image, &createdAt, &updatedAt, &level, &status)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -43,8 +45,10 @@ func FindAll() []User {
 		u.ID = id
 		u.Name = name
 		u.Email = email
+		u.Image = image
 		u.CreatedAt = createdAt
 		u.UpdatedAt = updatedAt
+		u.Level = level
 		u.Status = status
 
 		users = append(users, u)
@@ -58,12 +62,12 @@ func FindAll() []User {
 func Create(user User) {
 	db := db.ConnectDatabase()
 
-	insertUser, err := db.Prepare("INSERT INTO users(name, email, password) VALUES (?,?,?);")
+	insertUser, err := db.Prepare("INSERT INTO users(name, email, password, image, level) VALUES (?,?,?,?,?);")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	userID, err := insertUser.Exec(user.Name, user.Email, user.Password)
+	userID, err := insertUser.Exec(user.Name, user.Email, user.Password, user.Image, user.Level)
 	if err != nil {
 		panic(err.Error())
 	}
