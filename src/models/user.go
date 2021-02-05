@@ -76,3 +76,19 @@ func Create(user User) {
 
 	fmt.Println(userID)
 }
+
+// Update add a new User
+func Update(id int, user User) {
+	db := db.ConnectDatabase()
+
+	updateUser, err := db.Prepare("UPDATE users SET name = ?, email = ?, password = ?, image = ?, level= ? WHERE id = ?;")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	updateUser.Exec(user.Name, user.Email, user.Password, user.Image, user.Level, id)
+
+	defer db.Close()
+
+	fmt.Println(user)
+}

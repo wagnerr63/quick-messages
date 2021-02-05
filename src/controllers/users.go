@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 
 	"../models"
 )
@@ -50,6 +51,46 @@ func UsersStore(w http.ResponseWriter, r *http.Request) {
 	user.Password = GetMD5Hash(user.Password)
 
 	models.Create(user)
+	json.NewEncoder(w).Encode(user)
+}
+
+// UsersUpdate list all users
+func UsersUpdate(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: /users Method: PUT")
+
+	var user models.User
+	vars := mux.Vars(r)
+
+	err := json.NewDecoder(r.Body).Decode(&user)
+
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	if vars["id"] == "" {
+		http.Error(w, "ID is required", 400)
+		return
+	}
+
+	if user.Name == "" {
+		http.Error(w, "Name is required", 400)
+		return
+	}
+
+	if user.Email == "" {
+		http.Error(w, "E-mail is required", 400)
+		return
+	}
+
+	if user.Password == "" {
+		http.Error(w, "Password is required", 400)
+		return
+	}
+
+	user.Password = GetMD5Hash(user.Password)
+
+	models.Update(vars["id"], user)
 	json.NewEncoder(w).Encode(user)
 }
 
